@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROVEEDOR // TikTok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="scanlines"></div>
+
+<header class="topbar">
+    <div class="brand">
+        <span class="brand-glitch" data-text="PROVEEDOR">PROVEEDOR</span>
+        <span class="brand-sub">/tiktok · self-hosted</span>
+    </div>
+    <div class="status-pill">
+        <span class="dot"></span>
+        <span id="statusText">verificando servicio</span>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <p class="eyebrow">endpoint propio — sin intermediarios</p>
+        <h1>Busca y descarga<br><span class="cyan">sin depender</span> de nadie más.</h1>
+        <div class="searchbar">
+            <input id="queryInput" type="text" placeholder="buscar en tiktok..." autocomplete="off">
+            <button id="searchBtn">buscar</button>
+        </div>
+        <div class="downloadbar">
+            <input id="urlInput" type="text" placeholder="pega un link de tiktok para descargar...">
+            <button id="downloadBtn">descargar</button>
+        </div>
+    </section>
+
+    <section id="resultsSection" class="results hidden">
+        <div class="results-head">
+            <h2>resultados</h2>
+            <span id="resultsCount"></span>
+        </div>
+        <div id="resultsGrid" class="grid"></div>
+    </section>
+
+    <section id="downloadResult" class="download-result hidden"></section>
+
+    <section id="emptyState" class="empty-state">
+        <div class="empty-glyph">▚</div>
+        <p>Escribe algo arriba para buscar videos, o pega un link para descargarlo directo.</p>
+    </section>
+</main>
+
+<footer>
+    <span>creator: Edward</span>
+    <span class="sep">·</span>
+    <a href="/api">/api</a>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
