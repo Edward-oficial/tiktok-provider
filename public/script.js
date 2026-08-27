@@ -65,21 +65,21 @@ async function doSearch() {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card-cover" style="background-image:url('${video.video?.cover || video.video?.originCover || ''}')">
-                    <span class="card-duration">${video.video?.duration || 0}s</span>
+                <div class="card-cover" style="background-image:url('${video.cover || ''}')">
+                    <span class="card-duration">${video.duration || 0}s</span>
                 </div>
                 <div class="card-body">
                     <p class="card-desc">${video.desc || 'sin descripción'}</p>
-                    <p class="card-author">@${video.author?.uniqueId || video.author?.nickname || 'desconocido'}</p>
+                    <p class="card-author">@${video.author || 'desconocido'}</p>
                     <div class="card-stats">
                         <span>▶ ${formatNumber(video.stats?.playCount)}</span>
-                        <span>❤ ${formatNumber(video.stats?.diggCount)}</span>
+                        <span>♥ ${formatNumber(video.stats?.likeCount)}</span>
                     </div>
                     <button class="card-dl">descargar</button>
                 </div>
             `;
             card.querySelector('.card-dl').addEventListener('click', () => {
-                urlInput.value = `https://www.tiktok.com/@${video.author?.uniqueId}/video/${video.id}`;
+                urlInput.value = `https://www.tiktok.com/@${video.author}/video/${video.id}`;
                 doDownload();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
