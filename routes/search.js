@@ -1,8 +1,10 @@
 import express from 'express';
 import axios from 'axios';
-import { proxyAgent } from '../routes/proxyAgent.js';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 const router = express.Router();
+
+const proxyAgent = new HttpsProxyAgent("http://qmefplrt:p6d27d6c5uku@31.59.20.176:6754");
 
 const tikwm = axios.create({
     headers: {
