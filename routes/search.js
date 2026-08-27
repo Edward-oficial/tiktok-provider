@@ -1,8 +1,32 @@
 import express from 'express';
+import axios from 'axios';
 import Tiktok from '@tobyg74/tiktok-api-dl';
 
 const router = express.Router();
-const TIKTOK_COOKIE = "";
+
+let cachedCookie = "";
+let cachedAt = 0;
+
+async function getGuestCookie() {
+    const now = Date.now();
+    if (cachedCookie && now - cachedAt < 1000 * 60 * 30) {
+        return cachedCookie;
+    }
+
+    const response = await axios.get("https://www.tiktok.com/", {
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
+        },
+        timeout: 8000,
+    });
+
+    const setCookie = response.headers["set-cookie"] || [];
+    const cookie = setCookie.map(c => c.split(";")[0]).join("; ");
+
+    cachedCookie = cookie;
+    cachedAt = now;
+    return cookie;
+}
 
 router.get('/', async (req, res) => {
     const query = req.query.query;
@@ -16,10 +40,12 @@ router.get('/', async (req, res) => {
     }
 
     try {
+        const cookie = await getGuestCookie();
+
         const result = await Tiktok.Search(query.trim(), {
             type: "video",
             page: 1,
-            cookie: TIKTOK_COOKIE
+            cookie
         });
 
         if (result.status !== "success" || !result.result || result.result.length === 0) {
