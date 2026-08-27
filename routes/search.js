@@ -1,6 +1,5 @@
 import express from 'express';
 import axios from 'axios';
-import Tiktok from '@tobyg74/tiktok-api-dl';
 
 const router = express.Router();
 
@@ -13,63 +12,18 @@ const tikwm = axios.create({
     timeout: 8000,
 });
 
-let cachedCookie = "";
-let cachedAt = 0;
-
-async function getGuestCookie() {
-    const now = Date.now();
-    if (cachedCookie && now - cachedAt < 1000 * 60 * 30) {
-        return cachedCookie;
-    }
-
-    const response = await axios.get("https://www.tiktok.com/", {
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
-        },
-        timeout: 8000,
-    });
-
-    const setCookie = response.headers["set-cookie"] || [];
-    const cookie = setCookie.map(c => c.split(";")[0]).join("; ");
-
-    cachedCookie = cookie;
-    cachedAt = now;
-    return cookie;
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function searchDirect(query) {
-    const cookie = await getGuestCookie();
-
-    const result = await Tiktok.Search(query, {
-        type: "video",
-        page: 1,
-        cookie
-    });
-
-    if (result.status !== "success" || !result.result || result.result.length === 0) {
-        throw new Error(result.message || "sin resultados directos");
-    }
-
-    return result.result.map(v => ({
-        id: v.id,
-        desc: v.desc,
-        author: v.author?.uniqueId,
-        nickname: v.author?.nickname,
-        cover: v.video?.cover,
-        duration: v.video?.duration,
-        stats: v.stats,
-        source: "direct"
-    }));
-}
-
-async function searchFallback(query) {
+async function searchOnce(query) {
     const response = await tikwm.post(
         "https://www.tikwm.com/api/feed/search",
         new URLSearchParams({ keywords: query, count: 10, cursor: 0, HD: 1 })
     );
 
     if (response.data?.code !== 0) {
-        throw new Error(response.data?.msg || "fallback también falló");
+        throw new Error(response.data?.msg || "La API devolvió un error");
     }
 
     const videos = response.data?.data?.videos;
@@ -88,9 +42,30 @@ async function searchFallback(query) {
             playCount: v.play_count,
             likeCount: v.digg_count,
             commentCount: v.comment_count
-        },
-        source: "fallback"
+        }
     }));
+}
+
+async function search(query, retries = 2) {
+    let lastError;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            return await searchOnce(query);
+        } catch (error) {
+            lastError = error;
+
+            if (error.message === "No se encontraron videos.") {
+                throw error;
+            }
+
+            if (attempt < retries) {
+                await sleep(500 * (attempt + 1));
+            }
+        }
+    }
+
+    throw lastError;
 }
 
 router.get('/', async (req, res) => {
@@ -105,20 +80,11 @@ router.get('/', async (req, res) => {
     }
 
     try {
-        let data;
-        let usedFallback = false;
-
-        try {
-            data = await searchDirect(query.trim());
-        } catch (directError) {
-            data = await searchFallback(query.trim());
-            usedFallback = true;
-        }
+        const data = await search(query.trim());
 
         res.json({
             status: true,
             creator: "Edward",
-            fallback: usedFallback,
             total: data.length,
             data,
             timestamp: new Date().toISOString()
