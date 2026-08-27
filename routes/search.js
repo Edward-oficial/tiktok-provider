@@ -1,5 +1,6 @@
 import express from 'express';
 import axios from 'axios';
+import { proxyAgent } from '../routes/proxyAgent.js';
 
 const router = express.Router();
 
@@ -9,7 +10,9 @@ const tikwm = axios.create({
         "Cookie": "current_language=en",
         "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
     },
-    timeout: 8000,
+    timeout: 10000,
+    httpsAgent: proxyAgent,
+    proxy: false,
 });
 
 function sleep(ms) {
